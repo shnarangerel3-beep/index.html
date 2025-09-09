@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EparentJargalant - Statistic</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f4f4f9; color: #333; }
+    header { background: #4a90e2; color: #fff; padding: 1rem; text-align: center; }
+    main { padding: 1rem; max-width: 1000px; margin: auto; }
+    .card { background: #fff; padding: 1rem; margin: 1rem 0; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    h2 { color: #4a90e2; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+    table, th, td { border: 1px solid #ddd; }
+    th, td { padding: 8px; text-align: center; }
+    th { background: #f0f0f0; }
+    .input-group { margin: 1rem 0; display: flex; gap: 0.5rem; }
+    .input-group input { flex: 1; padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px; }
+    .input-group button { padding: 0.5rem 1rem; border: none; background: #4a90e2; color: #fff; border-radius: 4px; cursor: pointer; }
+    .input-group button:hover { background: #357ab8; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>EparentJargalant - Statistic</h1>
+    <p>Сургуулийн ирц, даалгавар, багшийн тэмдэглэл</p>
+  </header>
+  <main>
+    <div class="card">
+      <h2>Хүүхдийн мэдээлэл хайх</h2>
+      <div class="input-group">
+        <input type="text" id="regnum" placeholder="Регистрийн дугаар оруулна уу">
+        <button onclick="searchStudent()">Хайх</button>
+      </div>
+      <div id="studentInfo"></div>
+    </div>
+
+    <div class="card">
+      <h2>Багшийн нэвтрэх (PIN)</h2>
+      <div class="input-group">
+        <input type="password" id="teacherPin" placeholder="PIN код оруулна уу">
+        <button onclick="loginTeacher()">Нэвтрэх</button>
+      </div>
+      <div id="teacherPanel" style="display:none;">
+        <h3>Шинэ тэмдэглэл оруулах</h3>
+        <input type="text" id="note" placeholder="Тэмдэглэл бичих">
+        <button onclick="addNote()">Нэмэх</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Хичээлийн ирц</h2>
+      <table id="attendanceTable">
+        <tr><th>Огноо</th><th>Таслалт</th><th>Хоцролт</th></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h2>Гэрийн даалгавар</h2>
+      <table id="homeworkTable">
+        <tr><th>Огноо</th><th>Даалгавар</th><th>Биелэлт</th></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h2>Багшийн тэмдэглэл</h2>
+      <ul id="notesList"></ul>
+    </div>
+  </main>
+  <script>
+    const demoData = {
+      "AB12345678": {
+        name: "Бат Эрдэнэ",
+        attendance: [
+          {date:"2025-09-01", absent:0, late:1},
+          {date:"2025-09-02", absent:1, late:0}
+        ],
+        homework: [
+          {date:"2025-09-01", task:"Математикийн бодлого", done:true},
+          {date:"2025-09-02", task:"Эссэ бичих", done:false}
+        ],
+        notes: ["Анхаарал сул байсан"]
+      },
+      "CD87654321": {
+        name: "Сараа Энх",
+        attendance: [
+          {date:"2025-09-01", absent:0, late:0}
+        ],
+        homework: [
+          {date:"2025-09-01", task:"Англи хэлний үг цээжлэх", done:true}
+        ],
+        notes: []
+      },
+      "EF11223344": {
+        name: "Тэмүүжин Сүх",
+        attendance: [],
+        homework: [],
+        notes: ["Унтаж байсан"]
+      }
+    };
+    let currentStudent = null;
+
+    function searchStudent(){
+      const reg = document.getElementById('regnum').value.trim();
+      const info = document.getElementById('studentInfo');
+      const attTable = document.getElementById('attendanceTable');
+      const hwTable = document.getElementById('homeworkTable');
+      const notesList = document.getElementById('notesList');
+      attTable.innerHTML = "<tr><th>Огноо</th><th>Таслалт</th><th>Хоцролт</th></tr>";
+      hwTable.innerHTML = "<tr><th>Огноо</th><th>Даалгавар</th><th>Биелэлт</th></tr>";
+      notesList.innerHTML = "";
+      if(demoData[reg]){
+        currentStudent = reg;
+        info.innerHTML = "<p><b>Нэр:</b> "+demoData[reg].name+"</p>";
+        demoData[reg].attendance.forEach(a=>{
+          attTable.innerHTML += `<tr><td>${a.date}</td><td>${a.absent}</td><td>${a.late}</td></tr>`;
+        });
+        demoData[reg].homework.forEach(h=>{
+          hwTable.innerHTML += `<tr><td>${h.date}</td><td>${h.task}</td><td>${h.done ? "✓" : "✗"}</td></tr>`;
+        });
+        demoData[reg].notes.forEach(n=>{
+          notesList.innerHTML += `<li>${n}</li>`;
+        });
+      } else {
+        currentStudent = null;
+        info.innerHTML = "<p style='color:red'>Мэдээлэл олдсонгүй.</p>";
+      }
+    }
+
+    function loginTeacher(){
+      const pin = document.getElementById('teacherPin').value;
+      if(pin==="2025"){
+        document.getElementById('teacherPanel').style.display="block";
+      } else {
+        alert("Буруу PIN");
+      }
+    }
+
+    function addNote(){
+      const note = document.getElementById('note').value.trim();
+      if(currentStudent && note){
+        demoData[currentStudent].notes.push(note);
+        document.getElementById('notesList').innerHTML += `<li>${note}</li>`;
+        document.getElementById('note').value="";
+      } else {
+        alert("Эхлээд сурагч сонгоно уу.");
+      }
+    }
+  </script>
+</body>
+</html>
