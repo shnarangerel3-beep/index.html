@@ -2,150 +2,141 @@
 <html lang="mn">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>EparentJargalant - Statistic</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f4f4f9; color: #333; }
-    header { background: #4a90e2; color: #fff; padding: 1rem; text-align: center; }
-    main { padding: 1rem; max-width: 1000px; margin: auto; }
-    .card { background: #fff; padding: 1rem; margin: 1rem 0; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-    h2 { color: #4a90e2; }
-    table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
-    table, th, td { border: 1px solid #ddd; }
-    th, td { padding: 8px; text-align: center; }
-    th { background: #f0f0f0; }
-    .input-group { margin: 1rem 0; display: flex; gap: 0.5rem; }
-    .input-group input { flex: 1; padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px; }
-    .input-group button { padding: 0.5rem 1rem; border: none; background: #4a90e2; color: #fff; border-radius: 4px; cursor: pointer; }
-    .input-group button:hover { background: #357ab8; }
+    body {
+      font-family: 'Nunito', sans-serif;
+      margin: 0;
+      background: #f4f9ff;
+      color: #333;
+    }
+    header {
+      background: linear-gradient(90deg, #0066cc, #3399ff);
+      color: white;
+      padding: 15px 30px;
+      display: flex;
+      align-items: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      animation: slideDown 0.7s ease-out;
+    }
+    header img { height: 55px; margin-right: 15px; }
+    header h1 { margin: 0; font-size: 24px; font-weight: 700; }
+    main { padding: 30px; max-width: 900px; margin: auto; }
+    h2 { color: #0066cc; }
+    input {
+      padding: 10px; margin: 5px; width: 250px;
+      border: 1px solid #ccc; border-radius: 6px;
+    }
+    button {
+      padding: 10px 18px; margin: 5px;
+      background: #0066cc; color: white;
+      border: none; border-radius: 6px;
+      cursor: pointer; font-weight: bold;
+      transition: 0.3s;
+    }
+    button:hover { background: #004c99; transform: scale(1.05); }
+    .card {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      margin-top: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      opacity: 0;
+      transform: translateY(10px);
+      animation: fadeInUp 0.8s forwards;
+    }
+    table {
+      border-collapse: collapse; width: 100%; margin-top: 15px;
+    }
+    th, td {
+      border: 1px solid #ddd; padding: 10px; text-align: center;
+    }
+    th { background: #0066cc; color: white; }
+    footer {
+      background: #222; color: #aaa; text-align: center;
+      padding: 15px; margin-top: 40px;
+      animation: fadeIn 1.5s ease-in;
+    }
+
+    /* --- Animation keyframes --- */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slideDown {
+      from { transform: translateY(-100%); }
+      to { transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
   </style>
 </head>
 <body>
   <header>
-    <h1>EparentJargalant - Statistic</h1>
-    <p>Сургуулийн ирц, даалгавар, багшийн тэмдэглэл</p>
+    <img src="logo.png" alt="Сургуулийн лого">
+    <h1>EparentJargalant - Эцэг эхийн портал</h1>
   </header>
+
   <main>
-    <div class="card">
-      <h2>Хүүхдийн мэдээлэл хайх</h2>
-      <div class="input-group">
-        <input type="text" id="regnum" placeholder="Регистрийн дугаар оруулна уу">
-        <button onclick="searchStudent()">Хайх</button>
-      </div>
-      <div id="studentInfo"></div>
-    </div>
-
-    <div class="card">
-      <h2>Багшийн нэвтрэх (PIN)</h2>
-      <div class="input-group">
-        <input type="password" id="teacherPin" placeholder="PIN код оруулна уу">
-        <button onclick="loginTeacher()">Нэвтрэх</button>
-      </div>
-      <div id="teacherPanel" style="display:none;">
-        <h3>Шинэ тэмдэглэл оруулах</h3>
-        <input type="text" id="note" placeholder="Тэмдэглэл бичих">
-        <button onclick="addNote()">Нэмэх</button>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>Хичээлийн ирц</h2>
-      <table id="attendanceTable">
-        <tr><th>Огноо</th><th>Таслалт</th><th>Хоцролт</th></tr>
-      </table>
-    </div>
-
-    <div class="card">
-      <h2>Гэрийн даалгавар</h2>
-      <table id="homeworkTable">
-        <tr><th>Огноо</th><th>Даалгавар</th><th>Биелэлт</th></tr>
-      </table>
-    </div>
-
-    <div class="card">
-      <h2>Багшийн тэмдэглэл</h2>
-      <ul id="notesList"></ul>
-    </div>
+    <h2>📊 Хүүхдийн мэдээлэл хайх</h2>
+    <input type="text" id="regSearch" placeholder="Регистрийн дугаар оруулна уу">
+    <button onclick="searchStudent()">Хайх</button>
+    <div id="result"></div>
   </main>
+
+  <footer>
+    <p>📍 Жаргалант Сургууль | ☎ 95249574 | ✉ info@jargalant.edu.mn</p>
+  </footer>
+
   <script>
-    const demoData = {
-      "AB12345678": {
-        name: "Бат Эрдэнэ",
-        attendance: [
-          {date:"2025-09-01", absent:0, late:1},
-          {date:"2025-09-02", absent:1, late:0}
-        ],
-        homework: [
-          {date:"2025-09-01", task:"Математикийн бодлого", done:true},
-          {date:"2025-09-02", task:"Эссэ бичих", done:false}
-        ],
-        notes: ["Анхаарал сул байсан"]
-      },
-      "CD87654321": {
-        name: "Сараа Энх",
-        attendance: [
-          {date:"2025-09-01", absent:0, late:0}
-        ],
-        homework: [
-          {date:"2025-09-01", task:"Англи хэлний үг цээжлэх", done:true}
-        ],
-        notes: []
-      },
-      "EF11223344": {
-        name: "Тэмүүжин Сүх",
-        attendance: [],
-        homework: [],
-        notes: ["Унтаж байсан"]
-      }
-    };
-    let currentStudent = null;
+    let excelData = [];
 
-    function searchStudent(){
-      const reg = document.getElementById('regnum').value.trim();
-      const info = document.getElementById('studentInfo');
-      const attTable = document.getElementById('attendanceTable');
-      const hwTable = document.getElementById('homeworkTable');
-      const notesList = document.getElementById('notesList');
-      attTable.innerHTML = "<tr><th>Огноо</th><th>Таслалт</th><th>Хоцролт</th></tr>";
-      hwTable.innerHTML = "<tr><th>Огноо</th><th>Даалгавар</th><th>Биелэлт</th></tr>";
-      notesList.innerHTML = "";
-      if(demoData[reg]){
-        currentStudent = reg;
-        info.innerHTML = "<p><b>Нэр:</b> "+demoData[reg].name+"</p>";
-        demoData[reg].attendance.forEach(a=>{
-          attTable.innerHTML += `<tr><td>${a.date}</td><td>${a.absent}</td><td>${a.late}</td></tr>`;
-        });
-        demoData[reg].homework.forEach(h=>{
-          hwTable.innerHTML += `<tr><td>${h.date}</td><td>${h.task}</td><td>${h.done ? "✓" : "✗"}</td></tr>`;
-        });
-        demoData[reg].notes.forEach(n=>{
-          notesList.innerHTML += `<li>${n}</li>`;
-        });
-      } else {
-        currentStudent = null;
-        info.innerHTML = "<p style='color:red'>Мэдээлэл олдсонгүй.</p>";
-      }
-    }
+    // Excel унших
+    fetch('students.xlsx')
+      .then(res => res.arrayBuffer())
+      .then(data => {
+        const workbook = XLSX.read(data, { type: "array" });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        excelData = XLSX.utils.sheet_to_json(sheet);
+      });
 
-    function loginTeacher(){
-      const pin = document.getElementById('teacherPin').value;
-      if(pin==="2025"){
-        document.getElementById('teacherPanel').style.display="block";
-      } else {
-        alert("Буруу PIN");
-      }
-    }
+    // Хүүхдийн мэдээлэл хайх
+    function searchStudent() {
+      const reg = document.getElementById("regSearch").value.trim();
+      const filtered = excelData.filter(row => row["Регистр"] === reg);
 
-    function addNote(){
-      const note = document.getElementById('note').value.trim();
-      if(currentStudent && note){
-        demoData[currentStudent].notes.push(note);
-        document.getElementById('notesList').innerHTML += `<li>${note}</li>`;
-        document.getElementById('note').value="";
-      } else {
-        alert("Эхлээд сурагч сонгоно уу.");
+      if (filtered.length === 0) {
+        document.getElementById("result").innerHTML = "<p>❌ Олдсонгүй</p>";
+        return;
       }
+
+      let html = `<div class="card"><h3>${filtered[0]["Нэр"]} (${reg})</h3>`;
+      html += `<table>
+                <tr>
+                  <th>Огноо</th>
+                  <th>Ирц</th>
+                  <th>Гэрийн даалгавар</th>
+                  <th>Тэмдэглэл</th>
+                </tr>`;
+
+      filtered.forEach(row => {
+        html += `<tr>
+                  <td>${row["Огноо"]}</td>
+                  <td>${row["Ирц"]}</td>
+                  <td>${row["Гэрийн даалгавар"]}</td>
+                  <td>${row["Тэмдэглэл"] || "-"}</td>
+                </tr>`;
+      });
+
+      html += `</table></div>`;
+      document.getElementById("result").innerHTML = html;
     }
   </script>
 </body>
+</html>
+
 </html>
