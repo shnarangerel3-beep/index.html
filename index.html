@@ -2,149 +2,118 @@
 <html lang="mn">
 <head>
   <meta charset="UTF-8">
-  <title>EparentJargalant - Statistic</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+  <title>EparentJargalant - Эцэг эхийн портал</title>
   <style>
     body {
-      font-family: 'Nunito', sans-serif;
-      margin: 0;
-      background: #f4f9ff;
-      color: #333;
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: #f5f5f5;
     }
-    header {
-      background: linear-gradient(90deg, #0066cc, #3399ff);
-      color: white;
-      padding: 15px 30px;
-      display: flex;
-      align-items: center;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-      animation: slideDown 0.7s ease-out;
-    }
-    header img { height: 55px; margin-right: 15px; }
-    header h1 { margin: 0; font-size: 24px; font-weight: 700; }
-    main { padding: 30px; max-width: 900px; margin: auto; }
-    h2 { color: #0066cc; }
-    input {
-      padding: 10px; margin: 5px; width: 250px;
-      border: 1px solid #ccc; border-radius: 6px;
-    }
-    button {
-      padding: 10px 18px; margin: 5px;
-      background: #0066cc; color: white;
-      border: none; border-radius: 6px;
-      cursor: pointer; font-weight: bold;
-      transition: 0.3s;
-    }
-    button:hover { background: #004c99; transform: scale(1.05); }
-    .card {
-      background: white;
-      border-radius: 10px;
-      padding: 20px;
-      margin-top: 20px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      opacity: 0;
-      transform: translateY(10px);
-      animation: fadeInUp 0.8s forwards;
+    h1 {
+      text-align: center;
+      color: #2c3e50;
     }
     table {
-      border-collapse: collapse; width: 100%; margin-top: 15px;
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background: white;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
     th, td {
-      border: 1px solid #ddd; padding: 10px; text-align: center;
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: center;
     }
-    th { background: #0066cc; color: white; }
-    footer {
-      background: #222; color: #aaa; text-align: center;
-      padding: 15px; margin-top: 40px;
-      animation: fadeIn 1.5s ease-in;
+    th {
+      background-color: #3498db;
+      color: white;
     }
-
-    /* --- Animation keyframes --- */
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
     }
-    @keyframes slideDown {
-      from { transform: translateY(-100%); }
-      to { transform: translateY(0); }
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
+    #searchBox {
+      width: 50%;
+      padding: 10px;
+      margin: 20px auto;
+      display: block;
+      border: 1px solid #ccc;
+      border-radius: 5px;
     }
   </style>
 </head>
 <body>
-  <header>
-    <img src="logo.png" alt="Сургуулийн лого">
-    <h1>EparentJargalant - Эцэг эхийн портал</h1>
-  </header>
+  <h1>📖 Эцэг эхийн портал</h1>
 
-  <main>
-    <h2>📊 Хүүхдийн мэдээлэл хайх</h2>
-    <input type="text" id="regSearch" placeholder="Регистрийн дугаар оруулна уу">
-    <button onclick="searchStudent()">Хайх</button>
-    <div id="result"></div>
-  </main>
+  <input type="text" id="searchBox" placeholder="Регистрийн дугаараар хайх (Ж: Ре13220101)">
 
-  <footer>
-    <p>📍 Жаргалант Сургууль | ☎ 95249574 | ✉ info@jargalant.edu.mn</p>
-  </footer>
-<script>
-  let excelData = [];
-  
-  // Excel унших
-  fetch('students.xlsx')
-    .then(res => res.arrayBuffer())
-    .then(data => {
-      const workbook = XLSX.read(data, { type: "array" });
-      const sheet = workbook.Sheets[workbook.SheetNames[0]];
-      excelData = XLSX.utils.sheet_to_json(sheet, { defval: "" }); // хоосон эсүүдийг "" болгоно
-    });
+  <table>
+    <thead>
+      <tr>
+        <th>Регистр</th>
+        <th>Нэр</th>
+        <th>Огноо</th>
+        <th>Ирц</th>
+        <th>Гэрийн даалгавар</th>
+        <th>Тэмдэглэл</th>
+      </tr>
+    </thead>
+    <tbody id="studentsTableBody">
+      <tr><td colspan="6">Мэдээлэл ачааллаж байна...</td></tr>
+    </tbody>
+  </table>
 
-  // Хүүхдийн мэдээлэл хайх
-  function searchStudent() {
-    const reg = document.getElementById("regSearch").value.trim();
-    console.log("Хайж буй регистр:", reg); // Debug
+  <script>
+    let studentsData = [];
 
-    const filtered = excelData.filter(row => row["Регистр"] === reg);
-
-    if (filtered.length === 0) {
-      document.getElementById("result").innerHTML = "<p>❌ Олдсонгүй</p>";
-      return;
+    async function loadStudents() {
+      try {
+        const response = await fetch('students.json');
+        studentsData = await response.json();
+        renderTable(studentsData);
+      } catch (error) {
+        console.error("Алдаа гарлаа:", error);
+        document.getElementById("studentsTableBody").innerHTML =
+          `<tr><td colspan="6">⚠️ Мэдээллийг ачаалж чадсангүй</td></tr>`;
+      }
     }
 
-    let html = `<div class="card"><h3>${filtered[0]["Нэр"]} (${reg})</h3>`;
-    html += `<table>
-              <tr>
-                <th>Огноо</th>
-                <th>Ирц</th>
-                <th>Гэрийн даалгавар</th>
-                <th>Тэмдэглэл</th>
-              </tr>`;
+    function renderTable(data) {
+      const tableBody = document.getElementById("studentsTableBody");
+      tableBody.innerHTML = "";
 
-    filtered.forEach(row => {
-      // Огноо хөрвүүлэх
-      let dateVal = row["Огноо"];
-      let formattedDate = dateVal;
-      if (typeof dateVal === "number") {
-        let jsDate = new Date((dateVal - 25569) * 86400 * 1000);
-        formattedDate = jsDate.toISOString().split("T")[0]; // YYYY-MM-DD
+      if (data.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="6">Илэрц алга</td></tr>`;
+        return;
       }
 
-      html += `<tr>
-                <td>${formattedDate}</td>
-                <td>${row["Ирц"]}</td>
-                <td>${row["Гэрийн даалгавар"]}</td>
-                <td>${row["Тэмдэглэл"] || "-"}</td>
-              </tr>`;
+      data.forEach(student => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${student.Регистр}</td>
+          <td>${student.Нэр}</td>
+          <td>${student.Огноо}</td>
+          <td>${student.Ирц}</td>
+          <td>${student["Гэрийн даалгавар"]}</td>
+          <td>${student.Тэмдэглэл}</td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+
+    // 🔎 Хайлт
+    document.getElementById("searchBox").addEventListener("input", function() {
+      const keyword = this.value.trim();
+      if (keyword === "") {
+        renderTable(studentsData);
+      } else {
+        const filtered = studentsData.filter(s => s.Регистр.toLowerCase().includes(keyword.toLowerCase()));
+        renderTable(filtered);
+      }
     });
 
-    html += `</table></div>`;
-    document.getElementById("result").innerHTML = html;
-  }
-</script> 
+    window.onload = loadStudents;
+  </script>
 </body>
 </html>
 
