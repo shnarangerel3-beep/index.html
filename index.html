@@ -2,23 +2,31 @@
 <html lang="mn">
 <head>
   <meta charset="UTF-8">
-  <title>EparentJargalant - Эцэг эхийн портал</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Эцэг эхийн портал</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       margin: 20px;
-      background: #f5f5f5;
+      background: #f4f6f9;
     }
-    h1 {
+    h2 {
       text-align: center;
-      color: #2c3e50;
+    }
+    input {
+      display: block;
+      margin: 0 auto 20px auto;
+      padding: 10px;
+      width: 80%;
+      max-width: 400px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
     }
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 20px;
-      background: white;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      margin-top: 10px;
+      background: #fff;
     }
     th, td {
       border: 1px solid #ddd;
@@ -26,26 +34,17 @@
       text-align: center;
     }
     th {
-      background-color: #3498db;
+      background: #007bff;
       color: white;
     }
     tr:nth-child(even) {
-      background-color: #f9f9f9;
-    }
-    #searchBox {
-      width: 50%;
-      padding: 10px;
-      margin: 20px auto;
-      display: block;
-      border: 1px solid #ccc;
-      border-radius: 5px;
+      background: #f2f2f2;
     }
   </style>
 </head>
 <body>
-  <h1>📖 Эцэг эхийн портал</h1>
-
-  <input type="text" id="searchBox" placeholder="Регистрийн дугаараар хайх (Ж: Ре13220101)">
+  <h2>📖 Эцэг эхийн портал</h2>
+  <input type="text" id="search" placeholder="Регистрийн дугаараар хайх (Ж: Pe13220101)">
 
   <table>
     <thead>
@@ -58,61 +57,46 @@
         <th>Тэмдэглэл</th>
       </tr>
     </thead>
-    <tbody id="studentsTableBody">
-      <tr><td colspan="6">Мэдээлэл ачааллаж байна...</td></tr>
+    <tbody id="students-table-body">
+      <!-- Энд хайлтын үр дүн гарна -->
     </tbody>
   </table>
 
   <script>
-    let studentsData = [];
+    async function loadData() {
+      const response = await fetch('students.json');
+      const data = await response.json();
 
-    async function loadStudents() {
-      try {
-        const response = await fetch('students.json');
-        studentsData = await response.json();
-        renderTable(studentsData);
-      } catch (error) {
-        console.error("Алдаа гарлаа:", error);
-        document.getElementById("studentsTableBody").innerHTML =
-          `<tr><td colspan="6">⚠️ Мэдээллийг ачаалж чадсангүй</td></tr>`;
-      }
-    }
+      const tableBody = document.getElementById('students-table-body');
+      const searchInput = document.getElementById('search');
 
-    function renderTable(data) {
-      const tableBody = document.getElementById("studentsTableBody");
+      // Эхлээд хүснэгтийг хоосон байлгана
       tableBody.innerHTML = "";
 
-      if (data.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="6">Илэрц алга</td></tr>`;
-        return;
-      }
+      searchInput.addEventListener('input', () => {
+        const value = searchInput.value.trim();
+        tableBody.innerHTML = "";
 
-      data.forEach(student => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${student.Регистр}</td>
-          <td>${student.Нэр}</td>
-          <td>${student.Огноо}</td>
-          <td>${student.Ирц}</td>
-          <td>${student["Гэрийн даалгавар"]}</td>
-          <td>${student.Тэмдэглэл}</td>
-        `;
-        tableBody.appendChild(row);
+        if (value === "") return;
+
+        const filtered = data.filter(s => s.Регистр.toLowerCase().includes(value.toLowerCase()));
+
+        filtered.forEach(student => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${student.Регистр}</td>
+            <td>${student.Нэр}</td>
+            <td>${student.Огноо}</td>
+            <td>${student.Ирц}</td>
+            <td>${student["Гэрийн даалгавар"]}</td>
+            <td>${student.Тэмдэглэл ?? ""}</td>
+          `;
+          tableBody.appendChild(row);
+        });
       });
     }
 
-    // 🔎 Хайлт
-    document.getElementById("searchBox").addEventListener("input", function() {
-      const keyword = this.value.trim();
-      if (keyword === "") {
-        renderTable(studentsData);
-      } else {
-        const filtered = studentsData.filter(s => s.Регистр.toLowerCase().includes(keyword.toLowerCase()));
-        renderTable(filtered);
-      }
-    });
-
-    window.onload = loadStudents;
+    loadData();
   </script>
 </body>
 </html>
