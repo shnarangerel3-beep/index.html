@@ -2,11 +2,11 @@
 <html lang="mn">
 <head>
   <meta charset="UTF-8">
-  <title>EparentJargalant - Statistic</title>
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EparentJargalant - Эцэг эхийн портал</title>
   <style>
     body {
-      font-family: 'Nunito', sans-serif;
+      font-family: Arial, sans-serif;
       margin: 0;
       background: #f4f9ff;
       color: #333;
@@ -19,46 +19,21 @@
       align-items: center;
       box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
-    header img {
-      height: 55px;
-      margin-right: 15px;
-    }
-    header h1 {
-      margin: 0;
-      font-size: 24px;
-      font-weight: 700;
-    }
-    main {
-      padding: 30px;
-      max-width: 900px;
-      margin: auto;
-      text-align: center;
-    }
-    h2 {
-      color: #0066cc;
-    }
+    header img { height: 55px; margin-right: 15px; }
+    header h1 { margin: 0; font-size: 22px; font-weight: bold; }
+    main { padding: 20px; max-width: 900px; margin: auto; }
     input {
-      padding: 10px;
-      margin: 5px;
+      padding: 10px; margin: 5px;
+      border: 1px solid #ccc; border-radius: 6px;
       width: 250px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
     }
     button {
-      padding: 10px 18px;
-      margin: 5px;
-      background: #0066cc;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: bold;
-      transition: 0.3s;
+      padding: 10px 18px; margin: 5px;
+      background: #0066cc; color: white;
+      border: none; border-radius: 6px;
+      cursor: pointer; font-weight: bold;
     }
-    button:hover {
-      background: #004c99;
-      transform: scale(1.05);
-    }
+    button:hover { background: #004c99; }
     .card {
       background: white;
       border-radius: 10px;
@@ -67,25 +42,15 @@
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
     table {
-      border-collapse: collapse;
-      width: 100%;
-      margin-top: 15px;
+      border-collapse: collapse; width: 100%; margin-top: 15px;
     }
     th, td {
-      border: 1px solid #ddd;
-      padding: 10px;
-      text-align: center;
+      border: 1px solid #ddd; padding: 10px; text-align: center;
     }
-    th {
-      background: #0066cc;
-      color: white;
-    }
+    th { background: #0066cc; color: white; }
     footer {
-      background: #222;
-      color: #aaa;
-      text-align: center;
-      padding: 15px;
-      margin-top: 40px;
+      background: #222; color: #aaa; text-align: center;
+      padding: 15px; margin-top: 40px;
     }
   </style>
 </head>
@@ -109,23 +74,14 @@
   <script>
     let students = [];
 
-    // students.json уншина
-    fetch('students.json')
+    // JSON унших
+    fetch("students.json")
       .then(res => res.json())
-      .then(data => {
-        students = data;
-      })
-      .catch(err => {
-        console.error("students.json уншиж чадсангүй:", err);
-      });
+      .then(data => { students = data; });
 
+    // Хүүхдийн мэдээлэл хайх
     function searchStudent() {
       const reg = document.getElementById("regSearch").value.trim();
-      if (!reg) {
-        document.getElementById("result").innerHTML = "<p>⚠️ Регистр оруулна уу</p>";
-        return;
-      }
-
       const filtered = students.filter(row => row["Регистр"] === reg);
 
       if (filtered.length === 0) {
@@ -133,27 +89,31 @@
         return;
       }
 
-      let html = `
-        <div class="card">
-          <h3>${filtered[0]["Нэр"]} (${reg})</h3>
-          <table>
-            <tr>
-              <th>Огноо</th>
-              <th>Ирц</th>
-              <th>Гэрийн даалгавар</th>
-              <th>Тэмдэглэл</th>
-            </tr>
-      `;
+      let html = `<div class="card"><h3>${filtered[0]["Нэр"]} (${reg})</h3>`;
+      html += `<table>
+                <tr>
+                  <th>Огноо</th>
+                  <th>Ирц</th>
+                  <th>Гэрийн даалгавар</th>
+                  <th>Тэмдэглэл</th>
+                </tr>`;
 
       filtered.forEach(row => {
-        html += `
-          <tr>
-            <td>${row["Огноо"]}</td>
-            <td>${row["Ирц"]}</td>
-            <td>${row["Гэрийн даалгавар"]}</td>
-            <td>${row["Тэмдэглэл"] || "-"}</td>
-          </tr>
-        `;
+        let dateVal = row["Огноо"];
+        let formattedDate = dateVal;
+
+        // Хэрэв огноо timestamp байвал хөрвүүлнэ
+        if (typeof dateVal === "number") {
+          let jsDate = new Date(dateVal);
+          formattedDate = jsDate.toISOString().split("T")[0];
+        }
+
+        html += `<tr>
+                  <td>${formattedDate}</td>
+                  <td>${row["Ирц"]}</td>
+                  <td>${row["Гэрийн даалгавар"]}</td>
+                  <td>${row["Тэмдэглэл"] || "-"}</td>
+                </tr>`;
       });
 
       html += `</table></div>`;
