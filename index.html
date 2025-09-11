@@ -91,59 +91,60 @@
   <footer>
     <p>📍 Жаргалант Сургууль | ☎ 95249574 | ✉ info@jargalant.edu.mn</p>
   </footer>
+<script>
+  let excelData = [];
+  
+  // Excel унших
+  fetch('students.xlsx')
+    .then(res => res.arrayBuffer())
+    .then(data => {
+      const workbook = XLSX.read(data, { type: "array" });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      excelData = XLSX.utils.sheet_to_json(sheet, { defval: "" }); // хоосон эсүүдийг "" болгоно
+    });
 
-  <script>
-    let excelData = [];
+  // Хүүхдийн мэдээлэл хайх
+  function searchStudent() {
+    const reg = document.getElementById("regSearch").value.trim();
+    console.log("Хайж буй регистр:", reg); // Debug
 
-    // Excel унших
-    fetch('students.xlsx')
-      .then(res => res.arrayBuffer())
-      .then(data => {
-        const workbook = XLSX.read(data, { type: "array" });
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        excelData = XLSX.utils.sheet_to_json(sheet);
-      });
+    const filtered = excelData.filter(row => row["Регистр"] === reg);
 
-    // Хүүхдийн мэдээлэл хайх
-    function searchStudent() {
-      const reg = document.getElementById("regSearch").value.trim();
-      const filtered = excelData.filter(row => row["Регистр"] === reg);
+    if (filtered.length === 0) {
+      document.getElementById("result").innerHTML = "<p>❌ Олдсонгүй</p>";
+      return;
+    }
 
-      if (filtered.length === 0) {
-        document.getElementById("result").innerHTML = "<p>❌ Олдсонгүй</p>";
-        return;
+    let html = `<div class="card"><h3>${filtered[0]["Нэр"]} (${reg})</h3>`;
+    html += `<table>
+              <tr>
+                <th>Огноо</th>
+                <th>Ирц</th>
+                <th>Гэрийн даалгавар</th>
+                <th>Тэмдэглэл</th>
+              </tr>`;
+
+    filtered.forEach(row => {
+      // Огноо хөрвүүлэх
+      let dateVal = row["Огноо"];
+      let formattedDate = dateVal;
+      if (typeof dateVal === "number") {
+        let jsDate = new Date((dateVal - 25569) * 86400 * 1000);
+        formattedDate = jsDate.toISOString().split("T")[0]; // YYYY-MM-DD
       }
 
-      let html = `<div class="card"><h3>${filtered[0]["Нэр"]} (${reg})</h3>`;
-      html += `<table>
-                <tr>
-                  <th>Огноо</th>
-                  <th>Ирц</th>
-                  <th>Гэрийн даалгавар</th>
-                  <th>Тэмдэглэл</th>
-                </tr>`;
+      html += `<tr>
+                <td>${formattedDate}</td>
+                <td>${row["Ирц"]}</td>
+                <td>${row["Гэрийн даалгавар"]}</td>
+                <td>${row["Тэмдэглэл"] || "-"}</td>
+              </tr>`;
+    });
 
-      filtered.forEach(row => {
-        // Огноо хөрвүүлэх
-        let dateVal = row["Огноо"];
-        let formattedDate = dateVal;
-        if (typeof dateVal === "number") {
-          let jsDate = new Date((dateVal - 25569) * 86400 * 1000);
-          formattedDate = jsDate.toISOString().split("T")[0]; // YYYY-MM-DD
-        }
-
-        html += `<tr>
-                  <td>${formattedDate}</td>
-                  <td>${row["Ирц"]}</td>
-                  <td>${row["Гэрийн даалгавар"]}</td>
-                  <td>${row["Тэмдэглэл"] || "-"}</td>
-                </tr>`;
-      });
-
-      html += `</table></div>`;
-      document.getElementById("result").innerHTML = html;
-    }
-  </script>
+    html += `</table></div>`;
+    document.getElementById("result").innerHTML = html;
+  }
+</script> 
 </body>
 </html>
 
