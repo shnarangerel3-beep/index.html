@@ -10,17 +10,25 @@
       margin: 20px;
       background: #f4f6f9;
     }
-    h2 {
-      text-align: center;
-    }
-    input {
+    h2 { text-align: center; }
+    #search, #btnSearch {
       display: block;
-      margin: 0 auto 20px auto;
+      margin: 10px auto;
       padding: 10px;
       width: 80%;
       max-width: 400px;
       border: 1px solid #ccc;
       border-radius: 6px;
+    }
+    #btnSearch {
+      width: 150px;
+      background: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    #btnSearch:hover {
+      background: #0056b3;
     }
     table {
       width: 100%;
@@ -37,14 +45,13 @@
       background: #007bff;
       color: white;
     }
-    tr:nth-child(even) {
-      background: #f2f2f2;
-    }
+    tr:nth-child(even) { background: #f2f2f2; }
   </style>
 </head>
 <body>
   <h2>📖 Эцэг эхийн портал</h2>
   <input type="text" id="search" placeholder="Регистрийн дугаараар хайх (Ж: Pe13220101)">
+  <button id="btnSearch">Хайх</button>
 
   <table>
     <thead>
@@ -58,56 +65,57 @@
       </tr>
     </thead>
     <tbody id="students-table-body">
-      <!-- Хайлтын үр дүн энд гарна -->
+      <tr><td colspan="6">🔎 Хайлт хийгээгүй байна</td></tr>
     </tbody>
   </table>
 
   <script>
+    let data = [];
+
     async function loadData() {
       try {
-        // 🔗 JSON файл GitHub Pages линкээр
         const response = await fetch("https://shnarangerel3-beep.github.io/students.json");
-        const data = await response.json();
-
-        const tableBody = document.getElementById('students-table-body');
-        const searchInput = document.getElementById('search');
-
-        // Эхлээд хүснэгтийг хоосон байлгана
-        tableBody.innerHTML = "";
-
-        searchInput.addEventListener('input', () => {
-          const value = searchInput.value.trim();
-          tableBody.innerHTML = "";
-
-          if (value === "") return;
-
-          const filtered = data.filter(s => 
-            s.Регистр.toLowerCase().includes(value.toLowerCase())
-          );
-
-          if (filtered.length === 0) {
-            tableBody.innerHTML = `<tr><td colspan="6">❌ Мэдээлэл олдсонгүй</td></tr>`;
-          }
-
-          filtered.forEach(student => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-              <td>${student.Регистр}</td>
-              <td>${student.Нэр}</td>
-              <td>${student.Огноо}</td>
-              <td>${student.Ирц}</td>
-              <td>${student["Гэрийн даалгавар"]}</td>
-              <td>${student.Тэмдэглэл ?? ""}</td>
-            `;
-            tableBody.appendChild(row);
-          });
-        });
+        data = await response.json();
       } catch (err) {
-        console.error("⚠️ JSON файл уншихад алдаа гарлаа:", err);
+        console.error("⚠️ JSON файл олдсонгүй:", err);
       }
     }
 
-    loadData();
+    function searchStudent() {
+      const value = document.getElementById('search').value.trim();
+      const tableBody = document.getElementById('students-table-body');
+      tableBody.innerHTML = "";
+
+      if (value === "") {
+        tableBody.innerHTML = `<tr><td colspan="6">⚠️ Регистр оруулна уу</td></tr>`;
+        return;
+      }
+
+      const filtered = data.filter(s => 
+        s.Регистр.toLowerCase().includes(value.toLowerCase())
+      );
+
+      if (filtered.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="6">❌ Мэдээлэл олдсонгүй</td></tr>`;
+        return;
+      }
+
+      filtered.forEach(student => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${student.Регистр}</td>
+          <td>${student.Нэр}</td>
+          <td>${student.Огноо}</td>
+          <td>${student.Ирц}</td>
+          <td>${student["Гэрийн даалгавар"]}</td>
+          <td>${student.Тэмдэглэл ?? ""}</td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+
+    document.getElementById('btnSearch').addEventListener('click', searchStudent);
+    window.onload = loadData;
   </script>
 </body>
 </html>
