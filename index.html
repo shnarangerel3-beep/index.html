@@ -58,42 +58,53 @@
       </tr>
     </thead>
     <tbody id="students-table-body">
-      <!-- Энд зөвхөн хайлтын үр дүн гарна -->
+      <!-- Хайлтын үр дүн энд гарна -->
     </tbody>
   </table>
 
   <script>
     async function loadData() {
-      const response = await fetch('students.json');
-      const data = await response.json();
+      try {
+        // 🔗 JSON файл GitHub Pages линкээр
+        const response = await fetch("https://shnarangerel3-beep.github.io/students.json");
+        const data = await response.json();
 
-      const tableBody = document.getElementById('students-table-body');
-      const searchInput = document.getElementById('search');
+        const tableBody = document.getElementById('students-table-body');
+        const searchInput = document.getElementById('search');
 
-      // Хуудас ачааллах үед хоосон үлдээнэ
-      tableBody.innerHTML = "";
-
-      searchInput.addEventListener('input', () => {
-        const value = searchInput.value.trim();
+        // Эхлээд хүснэгтийг хоосон байлгана
         tableBody.innerHTML = "";
 
-        if (value === "") return;
+        searchInput.addEventListener('input', () => {
+          const value = searchInput.value.trim();
+          tableBody.innerHTML = "";
 
-        const filtered = data.filter(s => s.Регистр.toLowerCase().includes(value.toLowerCase()));
+          if (value === "") return;
 
-        filtered.forEach(student => {
-          const row = document.createElement('tr');
-          row.innerHTML = `
-            <td>${student.Регистр}</td>
-            <td>${student.Нэр}</td>
-            <td>${student.Огноо}</td>
-            <td>${student.Ирц}</td>
-            <td>${student["Гэрийн даалгавар"]}</td>
-            <td>${student.Тэмдэглэл ?? ""}</td>
-          `;
-          tableBody.appendChild(row);
+          const filtered = data.filter(s => 
+            s.Регистр.toLowerCase().includes(value.toLowerCase())
+          );
+
+          if (filtered.length === 0) {
+            tableBody.innerHTML = `<tr><td colspan="6">❌ Мэдээлэл олдсонгүй</td></tr>`;
+          }
+
+          filtered.forEach(student => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+              <td>${student.Регистр}</td>
+              <td>${student.Нэр}</td>
+              <td>${student.Огноо}</td>
+              <td>${student.Ирц}</td>
+              <td>${student["Гэрийн даалгавар"]}</td>
+              <td>${student.Тэмдэглэл ?? ""}</td>
+            `;
+            tableBody.appendChild(row);
+          });
         });
-      });
+      } catch (err) {
+        console.error("⚠️ JSON файл уншихад алдаа гарлаа:", err);
+      }
     }
 
     loadData();
